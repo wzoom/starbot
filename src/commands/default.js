@@ -67,6 +67,7 @@ const handler = (payload, res) => {
   console.log('Payload:', payload);
 
   getMenusFromCSV((err, list) => {
+    if (err) throw err
 
     let getMenuCallbacks = list.map((restaurant) => {
       return (callback) => {
@@ -113,10 +114,10 @@ const handler = (payload, res) => {
         attachments: attachments
       }, msgDefaults);
 
-      sendMenus(payload.response_url).sendWebhook(msg, (err, res) => {
+      sendMenus(payload.response_url).sendWebhook(msg, (err, resp) => {
         if (err) throw err
 
-        console.log('Menus were sent to Slack. RES:', res);
+        console.log('Menus were sent to Slack. RESP:', resp);
       })
     });
   });

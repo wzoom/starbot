@@ -47,7 +47,7 @@ app.listen(config('PORT'), (err) => {
 
   console.log(`\n🚀  Starbot LIVES on PORT ${config('PORT')} 🚀`)
 
-  //defaultCommand.handler();
+  defaultCommand.handler();
 
   if (config('SLACK_TOKEN')) {
     console.log(`🤖  beep boop: @starbot is real-time\n`)
