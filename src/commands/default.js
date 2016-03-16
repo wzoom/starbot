@@ -9,7 +9,7 @@ const cheerio = require('cheerio')
 const html2md = require('html-md')
 const csv = require('csv')
 const async = require('async')
-import sendMenus from '../tasks/sendMenus'
+const sendMenus = require('../tasks/sendMenus')
 
 const msgDefaults = {
   response_type: 'in_channel',
