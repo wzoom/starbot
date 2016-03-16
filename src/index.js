@@ -7,7 +7,7 @@ const bodyParser = require('body-parser')
 const _ = require('lodash')
 const config = require('./config')
 const commands = require('./commands')
-const helpCommand = require('./commands/help')
+const defaultCommand = require('./commands/default')
 
 let bot = require('./bot')
 
@@ -37,7 +37,7 @@ app.post('/commands/starbot', (req, res) => {
 
   let cmd = _.reduce(commands, (a, cmd) => {
     return payload.text.match(cmd.pattern) ? cmd : a
-  }, helpCommand)
+  }, defaultCommand)
 
   cmd.handler(payload, res)
 })
@@ -46,6 +46,8 @@ app.listen(config('PORT'), (err) => {
   if (err) throw err
 
   console.log(`\n🚀  Starbot LIVES on PORT ${config('PORT')} 🚀`)
+
+  //defaultCommand.handler();
 
   if (config('SLACK_TOKEN')) {
     console.log(`🤖  beep boop: @starbot is real-time\n`)

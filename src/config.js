@@ -13,7 +13,8 @@ const config = {
   WEBHOOK_URL: process.env.WEBHOOK_URL,
   STARBOT_COMMAND_TOKEN: process.env.STARBOT_COMMAND_TOKEN,
   SLACK_TOKEN: process.env.SLACK_TOKEN,
-  ICON_EMOJI: ':stars:'
+  ICON_EMOJI: ':stars:',
+  CSV_URL: process.env.CSV_URL,
 }
 
 module.exports = (key) => {
