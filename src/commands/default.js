@@ -43,7 +43,7 @@ const getMenuFromWeb = function(fetchURL, selector, callback) {
       let $element = $(selector);
 
       if (!$element.length) {
-        console.log('No Menu for Selector', selector, 'Fetch URL:', fetchURL, '$Element:', $element.html());
+        console.log('No Menu for Selector', selector, 'Fetch URL:', fetchURL, '$Element:', $element.html(), 'Data:', data);
         return callback(null, 'No Menu yet. :knife_fork_plate:');
       }
 
