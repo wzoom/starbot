@@ -18,70 +18,66 @@ const msgDefaults = {
 }
 
 
+const parseZomatoPage = function($, daysSelector){
+  let rows = [];
+  $(daysSelector).each((i, dayEl) => {
+    if (_.includes($(dayEl).find('.tmi-group-name').text(), 'dnes')) {
+      rows = $(dayEl).find('.tmi-daily.bold').map((i, itemEl) => {
+        return $(itemEl).find('.tmi-text-group').text().trim() + ' *' + $(itemEl).find('.tmi-price').text().trim() + '*';
+      }).get();
 
-const getZomatoMenu = function(zomatoURL, callback) {
+      return false; // break
+    }
+  });
 
-  helper.get_page_secure(zomatoURL, function(data) {
+  return rows.join('\n').trim();
+}
+
+const getMenuFromWeb = function(fetchURL, selector, callback) {
+  let markdownText = '';
+  let get_page = fetchURL.toLowerCase().startsWith('https') ? helper.get_page_secure : helper.get_page;
+
+  get_page(fetchURL, function(data) {
     if (data) {
       let $ = cheerio.load(data);
-      let $days = $('#daily-menu-container .tmi-group');
-      let rowMarkdown = '';
-      let rows = [];
+      let $element = $(selector);
 
-      //var promises = [];
+      if (!$element.length) return callback(null, 'No Menu yet. :knife_fork_plate:');
 
-      if (!$days.length) return callback(null, 'No Menu yet. :knife_fork_plate:');
+      if (_.includes(fetchURL.toLowerCase(), 'zomato.com')) {
+        markdownText = parseZomatoPage($, selector);
+      } else {
+        markdownText = html2md($element.html());
+        markdownText = _.filter(markdownText.split('\n'), _.empty).join('\n');
+      }
 
-      $days.each((i, dayEl) => {
-        if (_.includes($(dayEl).find('.tmi-group-name').text(), 'dnes')) {
-          rows = $(dayEl).find('.tmi-daily.bold').map((i, itemEl) => {
-            rowMarkdown = $(itemEl).find('.tmi-text-group').text().trim();
-            rowMarkdown += ' *' + $(itemEl).find('.tmi-price').text().trim() + '*';
-            return rowMarkdown;
-            //promises.push(new Promise(function(fulfill, reject){
-              //fulfill(rowMarkdown);
-            //}));
-          }).get();
-
-          return false; // break
-        }
-      });
-
-      let markdownText = rows.join('\n');
-      //let markdownText = html2md(html);
       callback(null, markdownText);
     } else {
-      console.log("No Zomato Data for URL", zomatoURL);
-      callback('No Zomato Data for URL:' + zomatoURL);
+      console.log("No Data for URL", fetchURL);
+      callback('No Data for URL:' + fetchURL);
     }
   });
 }
 
 
 const getMenusFromCSV = function(callback) {
-
-  const csvSchema = ['name', 'zomato_url', 'url'];
+  const csvSchema = ['name', 'fetch_url', 'url', 'selector'];
 
   console.log('Loading list of Restaurants from CSV:', config('CSV_URL'));
-
-
   helper.get_page_secure(config('CSV_URL'), function(csvData) {
-    if (csvData) {
+    if (!csvData) return callback('No CSV Data found on URL:' + config('CSV_URL'));
 
-      csv.parse(csvData, (err, list) => {
-        if (list) {
-          list = list.slice(1).map((row) => {
-            return row.reduce((remapedRow, col, i) => {
-              remapedRow[csvSchema[i]] = col;
-              return remapedRow;
-            }, {});
-          });
-        }
-        callback(err, list);
-      });
-    } else {
-      callback('No CSV Data found on URL:' + config('CSV_URL'));
-    }
+    csv.parse(csvData, (err, list) => {
+      if (list) {
+        list = list.slice(1).map((row) => {
+          return row.reduce((remapedRow, col, i) => {
+            remapedRow[csvSchema[i]] = col;
+            return remapedRow;
+          }, {});
+        });
+      }
+      callback(err, list);
+    });
   });
 }
 
@@ -94,11 +90,11 @@ const handler = (payload, res) => {
 
     let getMenuCallbacks = list.map((restaurant) => {
       return (callback) => {
-        if (!restaurant.zomato_url) return callback('Empty Zomato URL for Restaurant ' + restaurant.name);
+        if (!restaurant.fetch_url || !restaurant.selector) return callback('Required Restaurant parameter missing.' + restaurant.name);
 
         console.log('Getting menu for: ' + restaurant.name);
 
-        getZomatoMenu(restaurant.zomato_url, (err, menuText) => {
+        getMenuFromWeb(restaurant.fetch_url, restaurant.selector, (err, menuText) => {
           if (err) return callback(err);
 
           console.log('OK - Got menu for: ' + restaurant.name);
