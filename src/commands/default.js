@@ -48,7 +48,7 @@ const getMenuFromWeb = function(fetchURL, selector, callback) {
         markdownText = parseZomatoPage($, selector);
       } else {
         markdownText = html2md($element.html());
-        markdownText = _.filter(markdownText.split('\n'), _.empty).join('\n');
+        markdownText = _.filter(markdownText.replace(/\r/g, '').split('\n'), _.empty).join('\n');
       }
 
       callback(null, markdownText);
