@@ -86,12 +86,14 @@ const getMenusFromCSV = function(callback) {
 
 const handler = (payload, res) => {
 
+  let colors = ['#870e0e', '#d08b05', '#ffe900', '#1e7e51', '#805621'];
+
   console.log('Payload:', payload);
 
   getMenusFromCSV((err, list) => {
     if (err) throw err
 
-    let getMenuCallbacks = list.map((restaurant) => {
+    let getMenuCallbacks = list.map((restaurant, index) => {
       return (callback) => {
         if (!restaurant.fetch_url || !restaurant.selector) return callback('Required Restaurant parameter missing.' + restaurant.name);
 
@@ -107,7 +109,8 @@ const handler = (payload, res) => {
             title_link: restaurant.url,
             text: menuText,
             //pretext: '',
-            mrkdwn_in: ['text', 'pretext']
+            mrkdwn_in: ['text', 'pretext'],
+            color: colors[index % colors.length]
           });
         });
       };
