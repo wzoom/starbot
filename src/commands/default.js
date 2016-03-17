@@ -42,7 +42,10 @@ const getMenuFromWeb = function(fetchURL, selector, callback) {
       let $ = cheerio.load(data);
       let $element = $(selector);
 
-      if (!$element.length) return callback(null, 'No Menu yet. :knife_fork_plate:');
+      if (!$element.length) {
+        console.log('No Menu for Selector', selector, 'Fetch URL:', fetchURL, '$Element:', $element.html());
+        return callback(null, 'No Menu yet. :knife_fork_plate:');
+      }
 
       if (_.includes(fetchURL.toLowerCase(), 'zomato.com')) {
         markdownText = parseZomatoPage($, selector);
