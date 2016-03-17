@@ -116,25 +116,13 @@ const handler = (payload, res) => {
 
     console.log('Getting menus for [' + list.length + '] Restaurants');
 
-
-    if (payload) {
-      let msg = _.defaults({
-        channel: payload && payload.channel_name,
-        attachments: {
-          text: 'Just a second... Getting Menus for ' + list.length + ' Restaurants...'
-        }
-      }, msgDefaults);
-      res.set('content-type', 'application/json')
-      res.status(200).json(msg)
-    }
-
-
     async.parallel(getMenuCallbacks, function(err, attachments){
       if (err) throw err
 
       console.log('Finished. Menus:', attachments);
 
       let msg = _.defaults({
+        text: ':pacman: :pacman: :pacman:  :ghosty:',
         channel: payload && payload.channel_name,
         attachments: attachments
       }, msgDefaults);
@@ -146,6 +134,18 @@ const handler = (payload, res) => {
       })
     });
   });
+
+  // Immediate Response
+  if (payload) {
+    let msg = _.defaults({
+      channel: payload && payload.channel_name,
+      attachments: {
+        text: _.sample(['Right away, sir!', ':eye: :eye: sir!', 'It\'s coming...', 'And the winner is...', 'Wassuuup'])
+      }
+    }, msgDefaults);
+    res.set('content-type', 'application/json')
+    res.status(200).json(msg)
+  }
 }
 
 module.exports = { pattern: /menus/ig, handler: handler }
