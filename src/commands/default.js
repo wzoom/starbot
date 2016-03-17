@@ -116,7 +116,7 @@ const handler = (payload, res) => {
     console.log('Getting menus for [' + list.length + '] Restaurants');
 
     async.parallel(getMenuCallbacks, function(err, attachments){
-      //if (err) throw err
+      if (err) return;
 
       console.log('Finished. Menus:', attachments);
 
