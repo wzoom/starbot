@@ -23,9 +23,32 @@ const getZomatoMenu = function(zomatoURL, callback) {
 
   helper.get_page_secure(zomatoURL, function(data) {
     if (data) {
-      var $ = cheerio.load(data);
+      let $ = cheerio.load(data);
+      let $days = $('#daily-menu-container .tmi-group');
+      let rowMarkdown = '';
+      let rows = [];
 
-      var markdownText = html2md($('#daily-menu-container').html());
+      //var promises = [];
+
+      if (!$days.length) return callback(null, 'No Menu yet. :knife_fork_plate:');
+
+      $days.each((i, dayEl) => {
+        if (_.includes($(dayEl).find('.tmi-group-name').text(), 'dnes')) {
+          rows = $(dayEl).find('.tmi-daily.bold').map((i, itemEl) => {
+            rowMarkdown = $(itemEl).find('.tmi-text-group').text().trim();
+            rowMarkdown += ' *' + $(itemEl).find('.tmi-price').text().trim() + '*';
+            return rowMarkdown;
+            //promises.push(new Promise(function(fulfill, reject){
+              //fulfill(rowMarkdown);
+            //}));
+          }).get();
+
+          return false; // break
+        }
+      });
+
+      let markdownText = rows.join('\n');
+      //let markdownText = html2md(html);
       callback(null, markdownText);
     } else {
       console.log("No Zomato Data for URL", zomatoURL);
@@ -84,6 +107,7 @@ const handler = (payload, res) => {
             title: restaurant.name,
             title_link: restaurant.url,
             text: menuText,
+            //pretext: '',
             mrkdwn_in: ['text', 'pretext']
           });
         });
@@ -93,15 +117,16 @@ const handler = (payload, res) => {
     console.log('Getting menus for [' + list.length + '] Restaurants');
 
 
-    let msg = _.defaults({
-      channel: payload.channel_name,
-      attachments: {
-        text: 'Just a second... Getting Menus for ' + list.length + ' Restaurants...'
-      }
-    }, msgDefaults);
-    res.set('content-type', 'application/json')
-    res.status(200).json(msg)
-
+    if (payload) {
+      let msg = _.defaults({
+        channel: payload && payload.channel_name,
+        attachments: {
+          text: 'Just a second... Getting Menus for ' + list.length + ' Restaurants...'
+        }
+      }, msgDefaults);
+      res.set('content-type', 'application/json')
+      res.status(200).json(msg)
+    }
 
 
     async.parallel(getMenuCallbacks, function(err, attachments){
@@ -110,7 +135,7 @@ const handler = (payload, res) => {
       console.log('Finished. Menus:', attachments);
 
       let msg = _.defaults({
-        channel: payload.channel_name,
+        channel: payload && payload.channel_name,
         attachments: attachments
       }, msgDefaults);
 
