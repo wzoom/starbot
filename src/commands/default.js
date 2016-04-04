@@ -119,6 +119,11 @@ const handler = (payload, res) => {
 
     console.log('Getting menus for [' + list.length + '] Restaurants');
 
+    let sendCB = (err, resp) => {
+      if (err) throw err
+      console.log('Message was sent to Slack. RESP:', resp);
+    }
+
     async.parallel(getMenuCallbacks, function(err, attachments){
       if (err) return;
 
@@ -126,15 +131,19 @@ const handler = (payload, res) => {
 
       let msg = _.defaults({
         text: ':pacman: :pacman: :pacman:  :ghosty:',
-        channel: payload && payload.channel_name,
-        attachments: attachments
+        channel: payload && payload.channel_name
       }, msgDefaults);
 
-      sendMenus(payload.response_url).sendWebhook(msg, (err, resp) => {
-        if (err) throw err
+      sendMenus(payload.response_url).sendWebhook(msg, sendCB);
 
-        console.log('Menus were sent to Slack. RESP:', resp);
-      })
+      attachments.forEach((attachment) => {
+        let msg = _.defaults({
+          channel: payload && payload.channel_name,
+          attachments: [attachment]
+        }, msgDefaults);
+
+        sendMenus(payload.response_url).sendWebhook(msg, sendCB);
+      });
     });
   });
 
