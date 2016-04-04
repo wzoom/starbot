@@ -22,7 +22,8 @@ const parseZomatoPage = function($, daysSelector){
   let rows = [];
   $(daysSelector).each((i, dayEl) => {
     if (_.includes($(dayEl).find('.tmi-group-name').text(), 'dnes')) {
-      rows = $(dayEl).find('.tmi-daily.bold').map((i, itemEl) => {
+      let rowsSelector = $(dayEl).find('.tmi-daily.bold').length ? '.tmi-daily.bold' : '.tmi-daily';
+      rows = $(dayEl).find(rowsSelector).map((i, itemEl) => {
         return $(itemEl).find('.tmi-text-group').text().trim() + ' *' + $(itemEl).find('.tmi-price').text().trim() + '*';
       }).get();
 
